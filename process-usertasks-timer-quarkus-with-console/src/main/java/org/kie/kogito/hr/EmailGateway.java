@@ -16,20 +16,22 @@
 
 package org.kie.kogito.hr;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-@ApplicationScoped
-public class CheckRequirements {
-    public boolean check(Candidate candidate) {
-        System.out.println("Checking " + candidate.getName() + " skills...");
+import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-        String candidateSkills = candidate.getSkills().toLowerCase();
-        int candidateSalary = candidate.getSalary();
+@Path("/")
+@Produces(MediaType.APPLICATION_JSON)
+@RegisterRestClient(baseUri = "http://localhost:8000")
+public interface EmailGateway {
 
-        if (candidateSkills.contains("python") && candidateSkills.contains("java") && candidateSalary <= 3000) {
-            return true;
-        }
-
-        return false;
-    }
+    @POST
+    @Path("/send-email")
+    @Consumes(MediaType.APPLICATION_JSON)
+    Response sendEmail(EmailNotification emailNotification);
 }
