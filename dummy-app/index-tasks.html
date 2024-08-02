@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Active Tasks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Active Tasks</h2>
+        <form id="processForm" class="mb-3">
+            <div class="mb-3">
+                <label for="processId" class="form-label">Process ID</label>
+                <input type="text" class="form-control" id="processId" required>
+            </div>
+            <div class="mb-3">
+                <label for="userName" class="form-label">User Name</label>
+                <input type="text" class="form-control" id="userName" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Tasks</button>
+        </form>
+        <table class="table table-striped" id="processTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>State</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('processForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const processId = document.getElementById('processId').value;
+                const userName = document.getElementById('userName').value;
+                fetchProcesses(processId, userName);
+            });
+        });
+
+        function fetchProcesses(processId, userName) {
+            fetch(`http://localhost:8080/hiring/${processId}/tasks?user=${userName}`)
+                .then(response => response.json())
+                .then(response => {
+                    const tbody = document.getElementById('processTable').querySelector('tbody');
+                    tbody.innerHTML = '';
+                    response.forEach(process => {
+                        const row = `
+                            <tr>
+                                <td>${process.id}</td>
+                                <td>${process.name}</td>
+                                <td>${process.state}</td>
+                                <td>
+                                    <button class="btn btn-success" onclick="completeTask('${process.id}', '${process.name}', '${processId}', '${userName}', true)">Approve</button>
+                                    <button class="btn btn-danger" onclick="completeTask('${process.id}', '${process.name}', '${processId}', '${userName}', false)">Reject</button>
+                                </td>
+                            </tr>`;
+                        tbody.insertAdjacentHTML('beforeend', row);
+                    });
+                })
+                .catch(error => console.error('Error fetching processes:', error));
+        }
+
+        function completeTask(taskId, taskName, processId, userName, approve) {
+            const endpoint = taskName === 'HRInterview' ? 'HRInterview' : 'ITInterview';
+            fetch(`http://localhost:8080/hiring/${processId}/${endpoint}/${taskId}?phase=complete&user=${userName}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ approve: approve })
+            })
+            .then(response => response.json())
+            .then(response => {
+                alert('Task completed successfully!');
+                document.getElementById('processForm').dispatchEvent(new Event('submit')); // Refresh the table
+            })
+            .catch(error => {
+                console.error('Error completing task:', error);
+                alert('Error completing task');
+            });
+        }
+    </script>
+</body>
+</html>
