@@ -28,13 +28,13 @@ public class DecisionService {
     @RestClient
     EmailGateway emailGateway;
 
-    public void proccess(boolean hrApproval, boolean itApproval, Candidate candidate) {
+    public void proccess(Boolean hrApproval, Boolean itApproval, Candidate candidate) {
         EmailNotification emailNotification = new EmailNotification();
 
         emailNotification.setToEmail(candidate.getEmail());
         emailNotification.setSubject("Resultados proceso de selección " + candidate.getJobPosition());
 
-        if (hrApproval && itApproval) {
+        if ((hrApproval != null && itApproval != null) && (hrApproval && itApproval)) {
             emailNotification.setBody("Felicitaciones, el puesto es tuyo!!!\n\n" + candidate.getName()
                     + ", Recuerda estar pendiente de tus medios de contacto para continuar con la contratación.\n\nQue tengas un excelente resto de día!");
         } else {

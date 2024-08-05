@@ -29,12 +29,12 @@ public class EmailService {
     @RestClient
     EmailGateway emailGateway;
 
-    public boolean proccess(Candidate candidate, boolean checkStatus) {
+    public boolean proccess(Candidate candidate, Boolean checkStatus) {
         EmailNotification emailNotification = new EmailNotification();
 
         emailNotification.setToEmail(candidate.getEmail());
 
-        if (checkStatus) {
+        if (checkStatus != null && checkStatus) {
             emailNotification.setSubject("Felicidades, pasas el primer filtro!");
             emailNotification.setBody("Hola " + candidate.getName() + ".\n\nTe comentamos que pasas a la siguiente fase del proceso de selección para el cargo " + candidate.getJobPosition()
                     + ".\n\nRecuerda estar atento a tus medios de contacto. Feliz día.");

@@ -43,7 +43,6 @@ def register_candidate(candidate: Candidate):
     data = {"candidate": candidate.dict()}
 
     response = requests.post(url, headers=headers, json=data)
-    print(response.text)
     if response.status_code != 200:
         raise HTTPException(status_code=response.status_code, detail=response.text)
 
