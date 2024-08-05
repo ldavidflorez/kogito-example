@@ -140,7 +140,7 @@ services:
     volumes:
       - ../target/classes/META-INF/processSVG/:/home/kogito/data/svg/
     environment:
-      KOGITO_DATAINDEX_HTTP_URL: http://${DOCKER_GATEWAY_HOST}:8180/graphql
+      KOGITO_DATAINDEX_HTTP_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:8180/graphql
       QUARKUS_HTTP_CORS_ORIGINS: "/.*/"
       KOGITO_MANAGEMENT_CONSOLE_PROPS: -Dkogito.consoles.keycloak.config.url=http://localhost:8480/auth
         -Dkogito.consoles.keycloak.config.health-check-url=http://localhost:8480/auth/realms/kogito/.well-known/openid-configuration
@@ -157,7 +157,36 @@ services:
       keycloak:
         condition: service_healthy
     environment:
-      KOGITO_DATAINDEX_HTTP_URL: http://${DOCKER_GATEWAY_HOST}:8180/graphql
+      KOGITO_DATAINDEX_HTTP_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:8180/graphql
       QUARKUS_HTTP_CORS_ORIGINS: "/.*/"
       KOGITO_TASK_CONSOLE_PROPS: -Dkogito.consoles.keycloak.config.url=http://localhost:8480/auth
         -Dkogito.consoles.keycloak.config.health-check-url=http://localhost:8480/auth/realms/kogito/.well-known/openid-configuration
+  
+  kogito-app:
+    container_name: kogito-app
+    image: my-kogito-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      data-index:
+        condition: service_started
+      jobs-service:
+        condition: service_started
+    volumes:
+      - ./../target/classes/META-INF/processSVG/:/home/kogito/data/svg/
+    environment:
+      QUARKUS_DATASOURCE_JDBC_URL: "jdbc:postgresql://postgres:5432/kogito"
+      QUARKUS_DATASOURCE_USERNAME: kogito-user
+      QUARKUS_DATASOURCE_PASSWORD: kogito-pass
+      QUARKUS_DATASOURCE_DB_KIND: postgresql
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KOGITO_SERVICE_URL: http://localhost:8080
+      KOGITO_DATAINDEX_HTTP_URL: http://data-index:8180
+      QUARKUS_FLYWAY_BASELINE_ON_MIGRATE: "true"
+      QUARKUS_HTTP_CORS_ORIGINS: "/.*/"
+    extra_hosts:
+      - "data-index:host-gateway"

@@ -27,7 +27,7 @@ import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
-@RegisterRestClient(baseUri = "http://localhost:8000")
+@RegisterRestClient(baseUri = "http://host.docker.internal:8000")
 public interface EmailGateway {
 
     @POST
